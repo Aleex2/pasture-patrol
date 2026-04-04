@@ -24,29 +24,22 @@ public class DogAgent : Agent
     {
         rb = GetComponent<Rigidbody>();
         dogStartPos = transform.localPosition;
-        
-        if (sheep != null)
-        {
-            sheepRb = sheep.GetComponent<Rigidbody>();
-        }
+        if (sheep != null) sheepRb = sheep.GetComponent<Rigidbody>();
     }
 
     public override void OnEpisodeBegin()
     {
+        if (sheep == null || penGoal == null) return;
+        // Resetare Câine
         transform.localPosition = dogStartPos;
         transform.localRotation = Quaternion.identity;
         rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
 
+        // Resetare Oaie (Poziție random)
         if (sheep != null)
         {
-            // Spawn random în teren
             sheep.localPosition = new Vector3(Random.Range(-3.5f, 3.5f), 0.5f, Random.Range(-3.5f, 3.5f));
-            if (sheepRb != null)
-            {
-                sheepRb.linearVelocity = Vector3.zero;
-                sheepRb.angularVelocity = Vector3.zero;
-            }
+            sheepRb.linearVelocity = Vector3.zero;
         }
 
         lastDistanceToPen = Vector3.Distance(sheep.localPosition, penGoal.localPosition);
@@ -55,78 +48,87 @@ public class DogAgent : Agent
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        if (sheep == null || penGoal == null) return;
+        // 1-3: Direcția relativă Câine -> Oaie (Normalizată)
+        Vector3 toSheep = (sheep.localPosition - transform.localPosition).normalized;
+        sensor.AddObservation(toSheep); 
 
-        // 1-3: Poziție Câine
-        sensor.AddObservation(transform.localPosition);
-        // 4-6: Poziție Oaie 
-        sensor.AddObservation(sheep.localPosition);
-        // 7-9: Poziție Țarc
-        sensor.AddObservation(penGoal.localPosition);
+        // 4-6: Direcția relativă Oaie -> Țarc
+        Vector3 sheepToPen = (penGoal.localPosition - sheep.localPosition).normalized;
+        sensor.AddObservation(sheepToPen);
 
-        // 10: Direcția "Privirii" față de Oaie (Dot Product)
-        // Spune AI-ului dacă se uită spre oaie (1) sau e cu spatele (-1)
-        Vector3 dirToSheep = (sheep.localPosition - transform.localPosition).normalized;
-        float lookAtSheep = Vector3.Dot(transform.forward, dirToSheep);
-        sensor.AddObservation(lookAtSheep);
+        // 7: Distanța Câine -> Oaie (Scalată 0-1)
+        sensor.AddObservation(Vector3.Distance(transform.localPosition, sheep.localPosition) / 15f);
 
-        // 11-12: Viteza (X și Z)
-        sensor.AddObservation(rb.linearVelocity.x);
-        sensor.AddObservation(rb.linearVelocity.z);
+        // 8: Distanța Oaie -> Țarc (Scalată 0-1)
+        sensor.AddObservation(Vector3.Distance(sheep.localPosition, penGoal.localPosition) / 15f);
+
+        // 9: Viteza Câinelui (proiecție pe forward)
+        sensor.AddObservation(Vector3.Dot(rb.linearVelocity, transform.forward));
+
+        // 10-12: Poziția relativă a oii față de țarc (X, Y, Z)
+        sensor.AddObservation(sheepToPen);
+
+        // TOTAL: 12 Observații (Păstrăm Space Size 12 în Unity!)
     }
 
     public override void OnActionReceived(ActionBuffers actions)
     {
-        // CITIRE ACȚIUNI DISCRETE
-        int moveAction = actions.DiscreteActions[0]; // 0, 1, 2
-        int turnAction = actions.DiscreteActions[1]; // 0, 1, 2
+        // LOGICA DE MIȘCARE
+        int moveAction = actions.DiscreteActions[0];
+        int turnAction = actions.DiscreteActions[1];
 
-        // Logica Mișcare
-        float moveForward = 0f;
-        if (moveAction == 1) moveForward = 1f;  // Înainte
-        if (moveAction == 2) moveForward = -1f; // Înapoi
+        float rotateAmount = (turnAction == 1) ? -1f : (turnAction == 2 ? 1f : 0f);
+        transform.Rotate(Vector3.up, rotateAmount * turnSpeed * Time.deltaTime);
 
-        // Logica Rotație
-        float turn = 0f;
-        if (turnAction == 1) turn = -1f; // Stânga
-        if (turnAction == 2) turn = 1f;  // Dreapta
-
-        // Aplicare Fizică
-        transform.Rotate(Vector3.up, turn * turnSpeed * Time.deltaTime);
-        Vector3 moveVec = transform.forward * moveForward * moveSpeed;
+        float moveAmount = (moveAction == 1) ? 1f : (moveAction == 2 ? -0.5f : 0f);
+        Vector3 moveVec = transform.forward * moveAmount * moveSpeed;
         rb.linearVelocity = new Vector3(moveVec.x, rb.linearVelocity.y, moveVec.z);
 
         // RECOMPENSE
-        float currentDistToPen = Vector3.Distance(sheep.localPosition, penGoal.localPosition);
         float currentDistToSheep = Vector3.Distance(transform.localPosition, sheep.localPosition);
+        float currentDistSheepToPen = Vector3.Distance(sheep.localPosition, penGoal.localPosition);
 
-        // 1. Pedeapsă serioasă pentru rotație inutilă
-        if (turnAction != 0) { AddReward(-0.001f); }
+        // 1. Recompensă pentru apropierea de oaie (îl învață să meargă la ea)
+        if (currentDistToSheep < lastDistanceToSheep) AddReward(0.001f);
 
-        // 2. Recompensă pentru mers înainte (încurajăm activitatea)
-        if (moveAction == 1) { AddReward(0.0005f); }
+        // 2. RECOMPENSA PRINCIPALĂ: Oaia se mișcă spre țarc
+        if (currentDistSheepToPen < lastDistanceToPen)
+        {
+            AddReward(0.01f); // Recompensă mare pentru progres real
+        }
+        else if (currentDistSheepToPen > lastDistanceToPen)
+        {
+            AddReward(-0.005f); // Pedeapsă dacă oaia fuge de țarc
+        }
 
-        // 3. Recompensă dacă se uită spre oaie și merge spre ea
+        // 3. Penalizare de timp (Grăbește-te!)
+        AddReward(-0.0005f);
+        
+        // --- LOGICA DE RECOMPENSE ANTI-ROTAȚIE ---
+
+        // 1. PENALIZARE PENTRU ROTAȚIE (Dacă rotește, scade puncte)
+        if (turnAction != 0) 
+        {
+            AddReward(-0.001f); // O penalizare mică, dar constantă pentru fiecare frame de rotație
+        }
+
+        // 2. RECOMPENSĂ PENTRU MERS DREPT (Doar dacă merge înainte fără să rotească)
+        if (moveAction == 1 && turnAction == 0)
+        {
+            AddReward(0.0005f); // Îl încurajăm să aibă traiectorii drepte
+        }
+
+        // 3. RECOMPENSĂ DE ALINIERE (Cea mai importantă)
+        // Îi dăm puncte doar dacă se uită spre oaie ÎN TIMP ce merge
         Vector3 dirToSheep = (sheep.localPosition - transform.localPosition).normalized;
-        if (Vector3.Dot(transform.forward, dirToSheep) > 0.8f && moveAction == 1)
+        float alignment = Vector3.Dot(transform.forward, dirToSheep);
+
+        if (moveAction == 1 && alignment > 0.8f)
         {
-            AddReward(0.001f);
+            AddReward(0.005f); // Recompensă mare pentru mers direct către țintă
         }
 
-        // 4. Recompensă: Oaia se apropie de Țarc
-        if (currentDistToPen < lastDistanceToPen)
-        {
-            AddReward(0.002f);
-        }
-        else if (currentDistToPen > lastDistanceToPen)
-        {
-            AddReward(-0.001f);
-        }
-
-        // Pedeapsă de timp
-        AddReward(-0.0001f);
-
-        lastDistanceToPen = currentDistToPen;
+        lastDistanceToPen = currentDistSheepToPen;
         lastDistanceToSheep = currentDistToSheep;
     }
 

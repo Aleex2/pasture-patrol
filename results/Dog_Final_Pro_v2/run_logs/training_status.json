@@ -1,0 +1,29 @@
+{
+    "DogHerding": {
+        "checkpoints": [
+            {
+                "steps": 482302,
+                "file_path": "results\\Dog_Final_Pro_v2\\DogHerding\\DogHerding-482302.onnx",
+                "reward": null,
+                "creation_time": 1775302568.5536053,
+                "auxillary_file_paths": [
+                    "results\\Dog_Final_Pro_v2\\DogHerding\\DogHerding-482302.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 482302,
+            "file_path": "results\\Dog_Final_Pro_v2\\DogHerding.onnx",
+            "reward": null,
+            "creation_time": 1775302568.5536053,
+            "auxillary_file_paths": [
+                "results\\Dog_Final_Pro_v2\\DogHerding\\DogHerding-482302.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "2.11.0+cpu"
+    }
+}

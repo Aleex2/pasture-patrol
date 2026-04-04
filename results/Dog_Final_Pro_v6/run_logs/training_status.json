@@ -1,0 +1,56 @@
+{
+    "DogHerding": {
+        "checkpoints": [
+            {
+                "steps": 377954,
+                "file_path": "results\\Dog_Final_Pro_v6\\DogHerding\\DogHerding-377954.onnx",
+                "reward": 105.30918722506613,
+                "creation_time": 1775314053.4701586,
+                "auxillary_file_paths": [
+                    "results\\Dog_Final_Pro_v6\\DogHerding\\DogHerding-377954.pt"
+                ]
+            },
+            {
+                "steps": 386018,
+                "file_path": "results\\Dog_Final_Pro_v6\\DogHerding\\DogHerding-386018.onnx",
+                "reward": null,
+                "creation_time": 1775321263.1731038,
+                "auxillary_file_paths": [
+                    "results\\Dog_Final_Pro_v6\\DogHerding\\DogHerding-386018.pt"
+                ]
+            },
+            {
+                "steps": 386786,
+                "file_path": "results\\Dog_Final_Pro_v6\\DogHerding\\DogHerding-386786.onnx",
+                "reward": null,
+                "creation_time": 1775321325.4240096,
+                "auxillary_file_paths": [
+                    "results\\Dog_Final_Pro_v6\\DogHerding\\DogHerding-386786.pt"
+                ]
+            },
+            {
+                "steps": 395220,
+                "file_path": "results\\Dog_Final_Pro_v6\\DogHerding\\DogHerding-395220.onnx",
+                "reward": 98.97083253268566,
+                "creation_time": 1775321459.364115,
+                "auxillary_file_paths": [
+                    "results\\Dog_Final_Pro_v6\\DogHerding\\DogHerding-395220.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 395220,
+            "file_path": "results\\Dog_Final_Pro_v6\\DogHerding.onnx",
+            "reward": 98.97083253268566,
+            "creation_time": 1775321459.364115,
+            "auxillary_file_paths": [
+                "results\\Dog_Final_Pro_v6\\DogHerding\\DogHerding-395220.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "2.11.0+cpu"
+    }
+}

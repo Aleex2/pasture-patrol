@@ -38,9 +38,9 @@ behaviors:
     init_path: null
     keep_checkpoints: 5
     even_checkpoints: false
-    max_steps: 500000
+    max_steps: 1500000
     time_horizon: 64
-    summary_freq: 50000
+    summary_freq: 10000
     threaded: false
     self_play: null
     behavioral_cloning: null
@@ -59,17 +59,17 @@ engine_settings:
   width: 84
   height: 84
   quality_level: 5
-  time_scale: 10.0
+  time_scale: 20.0
   target_frame_rate: -1
   capture_frame_rate: 60
-  no_graphics: true
+  no_graphics: false
   no_graphics_monitor: false
 environment_parameters: null
 checkpoint_settings:
   run_id: Dog_Final_v1
   initialize_from: null
   load_model: false
-  resume: false
+  resume: true
   force: false
   train_model: false
   inference: false

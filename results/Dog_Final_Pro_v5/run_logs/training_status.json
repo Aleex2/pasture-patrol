@@ -1,0 +1,65 @@
+{
+    "DogHerding": {
+        "checkpoints": [
+            {
+                "steps": 545008,
+                "file_path": "results\\Dog_Final_Pro_v5\\DogHerding\\DogHerding-545008.onnx",
+                "reward": 111.00499224662781,
+                "creation_time": 1775308490.4920142,
+                "auxillary_file_paths": [
+                    "results\\Dog_Final_Pro_v5\\DogHerding\\DogHerding-545008.pt"
+                ]
+            },
+            {
+                "steps": 601278,
+                "file_path": "results\\Dog_Final_Pro_v5\\DogHerding\\DogHerding-601278.onnx",
+                "reward": 145.5056555221478,
+                "creation_time": 1775308914.830628,
+                "auxillary_file_paths": [
+                    "results\\Dog_Final_Pro_v5\\DogHerding\\DogHerding-601278.pt"
+                ]
+            },
+            {
+                "steps": 657854,
+                "file_path": "results\\Dog_Final_Pro_v5\\DogHerding\\DogHerding-657854.onnx",
+                "reward": 145.6086656510209,
+                "creation_time": 1775309565.942717,
+                "auxillary_file_paths": [
+                    "results\\Dog_Final_Pro_v5\\DogHerding\\DogHerding-657854.pt"
+                ]
+            },
+            {
+                "steps": 999988,
+                "file_path": "results\\Dog_Final_Pro_v5\\DogHerding\\DogHerding-999988.onnx",
+                "reward": 34.56475055310875,
+                "creation_time": 1775311475.8248742,
+                "auxillary_file_paths": [
+                    "results\\Dog_Final_Pro_v5\\DogHerding\\DogHerding-999988.pt"
+                ]
+            },
+            {
+                "steps": 1000052,
+                "file_path": "results\\Dog_Final_Pro_v5\\DogHerding\\DogHerding-1000052.onnx",
+                "reward": 34.56475055310875,
+                "creation_time": 1775311476.7456381,
+                "auxillary_file_paths": [
+                    "results\\Dog_Final_Pro_v5\\DogHerding\\DogHerding-1000052.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 1000052,
+            "file_path": "results\\Dog_Final_Pro_v5\\DogHerding.onnx",
+            "reward": 34.56475055310875,
+            "creation_time": 1775311476.7456381,
+            "auxillary_file_paths": [
+                "results\\Dog_Final_Pro_v5\\DogHerding\\DogHerding-1000052.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "2.11.0+cpu"
+    }
+}

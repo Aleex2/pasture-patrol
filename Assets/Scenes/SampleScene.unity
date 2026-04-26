@@ -2010,6 +2010,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 540318184}
     m_Modifications:
     - target: {fileID: 1157617892314389932, guid: d8aae3c2269ab86489be093f6b5de3ee, type: 3}
+      propertyPath: m_Model
+      value: 
+      objectReference: {fileID: 5022602860645237092, guid: 22fb2e297f186674fa67d34341eaa07f, type: 3}
+    - target: {fileID: 1157617892314389932, guid: d8aae3c2269ab86489be093f6b5de3ee, type: 3}
       propertyPath: m_BehaviorType
       value: 0
       objectReference: {fileID: 0}
@@ -2602,7 +2606,7 @@ MonoBehaviour:
   MaxStep: 10000
   sheep: {fileID: 1453732342}
   penGoal: {fileID: 1964659937}
-  moveSpeed: 3
+  moveSpeed: 6
   turnSpeed: 100
 --- !u!1001 &6149027390198713328
 PrefabInstance:

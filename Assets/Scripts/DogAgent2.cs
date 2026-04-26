@@ -129,12 +129,12 @@ public override void OnActionReceived(ActionBuffers actions)
         Vector3 toSheep = (sheep.localPosition - transform.localPosition).normalized;
         Vector3 sheepToPen = (penGoal.localPosition - sheep.localPosition).normalized;
 
-        sensor.AddObservation(toSheep); // 3
-        sensor.AddObservation(sheepToPen); // 3
-        sensor.AddObservation(Vector3.Distance(transform.localPosition, sheep.localPosition) / 15f); // 1
-        sensor.AddObservation(Vector3.Distance(sheep.localPosition, penGoal.localPosition) / 15f); // 1
-        sensor.AddObservation(Vector3.Dot(transform.forward, toSheep)); // 1
-        sensor.AddObservation(rb.linearVelocity / moveSpeed); // 3
+        sensor.AddObservation(toSheep); 
+        sensor.AddObservation(sheepToPen); 
+        sensor.AddObservation(Vector3.Distance(transform.localPosition, sheep.localPosition) / 15f); 
+        sensor.AddObservation(Vector3.Distance(sheep.localPosition, penGoal.localPosition) / 15f); 
+        sensor.AddObservation(Vector3.Dot(transform.forward, toSheep)); 
+        sensor.AddObservation(rb.linearVelocity / moveSpeed); 
         
         float alignmentGoal = Vector3.Dot(toSheep, sheepToPen);
         sensor.AddObservation(alignmentGoal); 
@@ -151,7 +151,7 @@ public override void OnActionReceived(ActionBuffers actions)
     public void ScoredGoal()
     {
         SetReward(100.0f);
-        Debug.Log("GOOOL! Succes total.");
+        Debug.Log("Succes");
         EndEpisode();
     }
 }

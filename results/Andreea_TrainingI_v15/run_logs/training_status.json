@@ -1,0 +1,56 @@
+{
+    "DogHerding": {
+        "checkpoints": [
+            {
+                "steps": 129468,
+                "file_path": "results\\Andreea_TrainingI_v15\\DogHerding\\DogHerding-129468.onnx",
+                "reward": 94.74737115423468,
+                "creation_time": 1777748637.8072827,
+                "auxillary_file_paths": [
+                    "results\\Andreea_TrainingI_v15\\DogHerding\\DogHerding-129468.pt"
+                ]
+            },
+            {
+                "steps": 426998,
+                "file_path": "results\\Andreea_TrainingI_v15\\DogHerding\\DogHerding-426998.onnx",
+                "reward": 106.80868238583207,
+                "creation_time": 1777751679.5886922,
+                "auxillary_file_paths": [
+                    "results\\Andreea_TrainingI_v15\\DogHerding\\DogHerding-426998.pt"
+                ]
+            },
+            {
+                "steps": 432749,
+                "file_path": "results\\Andreea_TrainingI_v15\\DogHerding\\DogHerding-432749.onnx",
+                "reward": 105.53073322633281,
+                "creation_time": 1777751861.1155553,
+                "auxillary_file_paths": [
+                    "results\\Andreea_TrainingI_v15\\DogHerding\\DogHerding-432749.pt"
+                ]
+            },
+            {
+                "steps": 442306,
+                "file_path": "results\\Andreea_TrainingI_v15\\DogHerding\\DogHerding-442306.onnx",
+                "reward": 106.28646564913825,
+                "creation_time": 1777756432.0337718,
+                "auxillary_file_paths": [
+                    "results\\Andreea_TrainingI_v15\\DogHerding\\DogHerding-442306.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 442306,
+            "file_path": "results\\Andreea_TrainingI_v15\\DogHerding.onnx",
+            "reward": 106.28646564913825,
+            "creation_time": 1777756432.0337718,
+            "auxillary_file_paths": [
+                "results\\Andreea_TrainingI_v15\\DogHerding\\DogHerding-442306.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.0.0",
+        "torch_version": "2.0.1+cu118"
+    }
+}

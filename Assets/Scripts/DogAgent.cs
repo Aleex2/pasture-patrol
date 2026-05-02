@@ -5,132 +5,182 @@ using Unity.MLAgents.Actuators;
 
 public class DogAgent : Agent
 {
+    public HerdingSpawnManager spawnManager;
+
     public Transform sheep;
     public Transform penGoal;
-    
-    public float moveSpeed = 7f;
-    public float turnSpeed = 200f;
+
+    private float moveSpeed = 10f;
+    private float turnSpeed = 100f;
     
     private Rigidbody rb;
-    private Rigidbody sheepRb;
     private Vector3 dogStartPos;
-    
     private float lastDistanceToPen;
-    private float lastDistanceToSheep;
+
+    private Animator anim;
 
     public override void Initialize()
     {
         rb = GetComponent<Rigidbody>();
+        anim = GetComponent<Animator>();
         dogStartPos = transform.localPosition;
-        if (sheep != null) sheepRb = sheep.GetComponent<Rigidbody>();
+
+        if (anim != null)
+        {
+            anim.SetFloat("State", 0.6f);
+            anim.SetFloat("Vert", 1);
+        }
     }
 
     public override void OnEpisodeBegin()
     {
-        if (sheep == null || penGoal == null) return;
-        
-        transform.localPosition = dogStartPos;
-        transform.localRotation = Quaternion.identity;
-        rb.linearVelocity = Vector3.zero;
-        
-        if (sheep != null)
+
+        if (spawnManager != null)
         {
-            sheep.localPosition = new Vector3(Random.Range(-3.5f, 3.5f), 0.5f, Random.Range(-3.5f, 3.5f));
-            sheepRb.linearVelocity = Vector3.zero;
+            // Resetam harta:
+            spawnManager.RespawnForEpisode();
+
+            lastDistanceToPen = Vector3.Distance(sheep.localPosition, penGoal.localPosition);
+            lastDistanceToSheep = Vector3.Distance(transform.localPosition, sheep.localPosition);
+
+            transform.localRotation = Quaternion.identity;
+
+            // Pozitionam cainele intr-o rotatie aleatorie
+            transform.localRotation = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
+        }
+    }
+
+    private float lastDistanceToSheep;
+    public override void OnActionReceived(ActionBuffers actions)
+    {
+        if (sheep == null || penGoal == null) return;
+
+        // Miscare agent
+        int moveAction = actions.DiscreteActions[0];
+        int turnAction = actions.DiscreteActions[1];
+
+        // 1 = stanga, 2 = dreapta, 0 = nimic
+        float rotateAmount = (turnAction == 1) ? -1f : (turnAction == 2 ? 1f : 0f);
+        transform.Rotate(Vector3.up, rotateAmount * turnSpeed * Time.deltaTime);
+
+        // 1 = inainte, 2 = inapoi, 0 = nimic
+        float moveAmount = (moveAction == 1) ? 1f : (moveAction == 2 ? -0.5f : 0);
+        Vector3 moveVec = transform.forward * moveAmount * moveSpeed;
+        rb.linearVelocity = new Vector3(moveVec.x, rb.linearVelocity.y, moveVec.z);
+
+        // Recompensa:
+
+        // distante
+        float currentDistToSheep = Vector3.Distance(transform.localPosition, sheep.localPosition);
+        float currentDistToPen = Vector3.Distance(sheep.localPosition, penGoal.localPosition);
+        
+        // directii:
+        Vector3 dirToSheep = (sheep.localPosition - transform.localPosition).normalized;
+        Vector3 dirSheepToPen = (penGoal.localPosition - sheep.localPosition).normalized;
+
+        // pozitia ideala pentru ghidat oaia:
+        float behindSheepOffset = 8.0f;
+        Vector3 idealSteeringPos = sheep.localPosition - (dirSheepToPen * behindSheepOffset);
+
+        // distanta fata de pozitia ideala:
+        float distToSteeringPos = Vector3.Distance(transform.localPosition, idealSteeringPos);
+
+        // reward daca cainele aproape de pozitia ideala
+        if (distToSteeringPos < 5.0f)
+        {
+            AddReward(0.001f); // Incentivizes circling to the right side
         }
 
-        lastDistanceToPen = Vector3.Distance(sheep.localPosition, penGoal.localPosition);
-        lastDistanceToSheep = Vector3.Distance(transform.localPosition, sheep.localPosition);
+        // reward daca cainele aproape de pozitia ideala si se uita in directia corecta
+        float dogFaceAlignment = Vector3.Dot(transform.forward, dirSheepToPen);
+        if (distToSteeringPos < 5.0f && dogFaceAlignment > 0.6f)
+        {
+            AddReward(0.005f);
+        }
+
+        // reward daca cainele directioneza oaia corect spre tarc
+        float dotAlignment = Vector3.Dot(dirToSheep, dirSheepToPen);
+        if (currentDistToSheep < 13.0f && dotAlignment > 0.8f)
+        {
+            AddReward(0.005f);
+        }
+
+        // apropiere de oaie recompensata, penalizare pentru departare
+        float distanceDelta = lastDistanceToSheep - currentDistToSheep;
+        AddReward(distanceDelta * 0.02f);
+
+        // recompesa/ penalizare oaie - tarc
+        float progress = lastDistanceToPen - currentDistToPen;
+
+        if (progress > 0.02f)
+        {
+            AddReward(0.1f);
+        }
+        else if (progress < -0.02f)
+        {
+            AddReward(-0.05f);
+        }
+
+        AddReward(-0.001f); //penzalizare de timp
+
+        if (StepCount > 4000)
+        {
+            AddReward(-1.0f);
+            EndEpisode();
+        }
+
+        lastDistanceToPen = currentDistToPen;
+        lastDistanceToSheep = currentDistToSheep;
     }
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        
-        Vector3 toSheep = (sheep.localPosition - transform.localPosition).normalized;
-        sensor.AddObservation(toSheep); 
-        
-        Vector3 sheepToPen = (penGoal.localPosition - sheep.localPosition).normalized;
-        sensor.AddObservation(sheepToPen);
-        
-        sensor.AddObservation(Vector3.Distance(transform.localPosition, sheep.localPosition) / 15f);
-        
-        sensor.AddObservation(Vector3.Distance(sheep.localPosition, penGoal.localPosition) / 15f);
-        
-        sensor.AddObservation(Vector3.Dot(rb.linearVelocity, transform.forward));
-        
-        sensor.AddObservation(sheepToPen);
-        
-    }
-
-    public override void OnActionReceived(ActionBuffers actions)
-    {
-        int moveAction = actions.DiscreteActions[0];
-        int turnAction = actions.DiscreteActions[1];
-
-        float rotateAmount = (turnAction == 1) ? -1f : (turnAction == 2 ? 1f : 0f);
-        transform.Rotate(Vector3.up, rotateAmount * turnSpeed * Time.deltaTime);
-
-        float moveAmount = (moveAction == 1) ? 1f : (moveAction == 2 ? -0.5f : 0f);
-        Vector3 moveVec = transform.forward * moveAmount * moveSpeed;
-        rb.linearVelocity = new Vector3(moveVec.x, rb.linearVelocity.y, moveVec.z);
-        
-        float currentDistToSheep = Vector3.Distance(transform.localPosition, sheep.localPosition);
-        float currentDistSheepToPen = Vector3.Distance(sheep.localPosition, penGoal.localPosition);
-        
-        if (currentDistToSheep < lastDistanceToSheep) AddReward(0.001f);
-        
-        if (currentDistSheepToPen < lastDistanceToPen)
+        if (sheep == null || penGoal == null || rb == null)
         {
-            AddReward(0.01f); 
-        }
-        else if (currentDistSheepToPen > lastDistanceToPen)
-        {
-            AddReward(-0.005f); 
-        }
-        
-        AddReward(-0.0005f);
-        
-        if (turnAction != 0) 
-        {
-            AddReward(-0.001f); 
-        }
-        
-        if (moveAction == 1 && turnAction == 0)
-        {
-            AddReward(0.0005f); 
+            for (int i = 0; i < 14; i++) sensor.AddObservation(0f);
+            return;
         }
 
+        // Directii relative in local space-ul cainelui
         Vector3 dirToSheep = (sheep.localPosition - transform.localPosition).normalized;
-        float alignment = Vector3.Dot(transform.forward, dirToSheep);
+        Vector3 toSheepLocal = transform.InverseTransformDirection(dirToSheep);
+        sensor.AddObservation(toSheepLocal); // 3 obs
 
-        if (moveAction == 1 && alignment > 0.8f)
-        {
-            AddReward(0.005f); 
-        }
+        Vector3 dirSheepToPen = (penGoal.localPosition - sheep.localPosition).normalized;
+        Vector3 sheepToPenLocal = transform.InverseTransformDirection(dirSheepToPen);
+        sensor.AddObservation(sheepToPenLocal); // 3 obs
 
-        lastDistanceToPen = currentDistSheepToPen;
-        lastDistanceToSheep = currentDistToSheep;
+        // Cross product pentru a sti daca oaia e in stanga sau dreapta
+        Vector3 cross = Vector3.Cross(dirToSheep, dirSheepToPen);
+        sensor.AddObservation(cross.y); // 1 obs: pozitiv - stanga, negativ - dreapta.
+
+        // Distante normalizate
+        sensor.AddObservation(Vector3.Distance(transform.localPosition, sheep.localPosition) / 250f); // 1 obs
+        sensor.AddObservation(Vector3.Distance(sheep.localPosition, penGoal.localPosition) / 250f); // 1 obs
+
+        // Alinierea cainelui cu oaia
+        sensor.AddObservation(Vector3.Dot(transform.forward, dirToSheep)); // 1 obs
+
+        // Viteza locala a cainelui
+        Vector3 localVelocity = transform.InverseTransformDirection(rb.linearVelocity);
+        sensor.AddObservation(localVelocity / moveSpeed); // 3 obs
+
+        // Alinierea caine - oaie - tarc (1 obs)
+        float alignmentGoal = Vector3.Dot(dirToSheep, dirSheepToPen);
+        sensor.AddObservation(alignmentGoal); // 1 obs
     }
 
     public override void Heuristic(in ActionBuffers actionsOut)
     {
         var discreteActions = actionsOut.DiscreteActions;
-        
-        float v = Input.GetAxisRaw("Vertical");
-        if (v > 0) discreteActions[0] = 1;
-        else if (v < 0) discreteActions[0] = 2;
-        else discreteActions[0] = 0;
-        
-        float h = Input.GetAxisRaw("Horizontal");
-        if (h > 0) discreteActions[1] = 2;
-        else if (h < 0) discreteActions[1] = 1;
-        else discreteActions[1] = 0;
+        discreteActions[0] = Input.GetAxisRaw("Vertical") > 0 ? 1 : (Input.GetAxisRaw("Vertical") < 0 ? 2 : 0);
+        discreteActions[1] = Input.GetAxisRaw("Horizontal") > 0 ? 2 : (Input.GetAxisRaw("Horizontal") < 0 ? 1 : 0);
     }
 
     public void ScoredGoal()
     {
-        SetReward(15.0f); 
-        Debug.Log("succes");
+        SetReward(100.0f);
+        Debug.Log("Succes");
         EndEpisode();
     }
 }

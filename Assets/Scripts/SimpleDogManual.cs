@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class SimpleDogManual : MonoBehaviour
 {
-    public float speed = 5f;
+    public float speed = 10f;
     public float rotationSpeed = 720f;
     
     private Rigidbody rb;

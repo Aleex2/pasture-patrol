@@ -3,9 +3,13 @@ using UnityEngine;
 public class SheepController : MonoBehaviour
 {
     public Transform dogTransform;
-    public float fleeDistance = 5.0f;
-    public float speed = 3.0f;
-    
+
+    private float fleeDistance = 12f;
+    private float speed = 6.0f;
+
+    private float sitDelay = 2f;
+    private float sitTimer = 0f;
+
     private Animator animator; 
 
     void Start() {
@@ -16,10 +20,19 @@ public class SheepController : MonoBehaviour
         float distance = Vector3.Distance(transform.position, dogTransform.position);
 
         if (distance < fleeDistance) {
+            sitTimer = 0f;
             FleeFromDog();
         } else {
-            animator.Play("stand_to_sit"); 
-         
+
+            sitTimer += Time.deltaTime;
+            if (sitTimer >= sitDelay)
+            {
+                animator.Play("stand_to_sit");
+            } else if (sitTimer > 0.2f)
+            {
+                animator.Play("idle");
+            }
+
         }
     }
 
@@ -38,7 +51,8 @@ public class SheepController : MonoBehaviour
         transform.position = nextPosition;
         
         if (direction != Vector3.zero) {
-            transform.rotation = Quaternion.LookRotation(direction);
+            Quaternion targetRot = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, 180f * Time.deltaTime);
         }
     
         animator.Play("run_forward");
